@@ -1,6 +1,6 @@
 import {_decorator, Component, Node} from 'cc';
-import {ViewManager} from "db://assets/Scriipts/ViewManager";
-import {EGameTurn} from "db://assets/Scriipts/GameManager";
+import {EGameTurn} from "db://assets/Scripts/GameManager";
+import {ViewManager} from "db://assets/Scripts/ViewManager";
 
 const {ccclass, property} = _decorator;
 

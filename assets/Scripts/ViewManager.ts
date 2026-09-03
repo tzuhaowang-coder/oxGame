@@ -1,7 +1,6 @@
 import {_decorator, Button, Component, Node} from 'cc';
-import {OXButton} from "db://assets/Scriipts/OXButton";
-import {GameManager} from "db://assets/Scriipts/GameManager";
-import {Board} from "db://assets/Scriipts/Board";
+import {Board} from "db://assets/Scripts/Board";
+import {OXButton} from "db://assets/Scripts/OXButton";
 
 const {ccclass, property} = _decorator;
 

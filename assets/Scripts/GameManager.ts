@@ -1,7 +1,7 @@
 import {_decorator, Component, Node} from 'cc';
-import {Board} from "db://assets/Scriipts/Board";
-import {AIManager} from "db://assets/Scriipts/AIManager";
-import {ViewManager} from "db://assets/Scriipts/ViewManager";
+import {AIManager} from "db://assets/Scripts/AIManager";
+import {ViewManager} from "db://assets/Scripts/ViewManager";
+import {Board} from "db://assets/Scripts/Board";
 
 const {ccclass, property} = _decorator;
 

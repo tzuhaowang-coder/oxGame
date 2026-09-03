@@ -1,4 +1,4 @@
-import {EGameTurn} from "db://assets/Scriipts/GameManager";
+import {EGameTurn} from "db://assets/Scripts/GameManager";
 
 export class Board {
     private readonly cellsMarkType: EGameTurn[] = new Array(9).fill(EGameTurn.Prepare);
