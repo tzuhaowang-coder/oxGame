@@ -1,10 +1,19 @@
 import {EGameTurn} from "db://assets/Scripts/GameManager";
 
 export class Board {
-    private readonly cellsMarkType: EGameTurn[] = new Array(9).fill(EGameTurn.Prepare);
+    private readonly cellsMarkType: EGameTurn[] = new Array(9).fill(EGameTurn.Over);
 
     private readonly winLines: number[][] = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 5, 8], [3, 5, 7]];
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+
+    getCellMarkType(): EGameTurn[] {
+        return [...this.cellsMarkType];
+    }
+
+    canPut(index: number): boolean {
+        return this.cellsMarkType[index] == EGameTurn.Prepare;
+    }
 
     public getCell(index: number): EGameTurn {
         return this.cellsMarkType[index];
@@ -14,16 +23,21 @@ export class Board {
         this.cellsMarkType[index] = EGameTurn.Prepare;
     }
 
+    cloneBoard(): Board {
+        return
+    }
+
     chessMove(index: number, whoseTurn: EGameTurn): void {
         this.cellsMarkType[index] = whoseTurn;
     }
 
     checkWin(markType: EGameTurn) {
+        // console.log(`markType is ${markType}}`)
         for (let i = 0; i < this.winLines.length; i++) {
             let line = this.winLines[i];
-            if (line[0] === markType &&
-                line[1] === markType &&
-                line[2] === markType) {
+            if (this.cellsMarkType[line[0]] === markType &&
+                this.cellsMarkType[line[1]] === markType &&
+                this.cellsMarkType[line[2]] === markType) {
                 return true;
             }
         }

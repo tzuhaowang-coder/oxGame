@@ -1,11 +1,15 @@
-import {_decorator, Component, Node} from 'cc';
+import {_decorator, Component, Node, Sprite, SpriteFrame, SpriteRenderer} from 'cc';
 import {EGameTurn} from "db://assets/Scripts/GameManager";
-import {ViewManager} from "db://assets/Scripts/ViewManager";
 
 const {ccclass, property} = _decorator;
 
 @ccclass('OXButton')
 export class OXButton extends Component {
+    private mark: Sprite;
+
+    onLoad() {
+        this.mark = this.node.getComponent(Sprite);
+    }
 
     // delegate
     onClickButton(index: number, event: (para: number) => void) {
@@ -27,15 +31,15 @@ export class OXButton extends Component {
     private _gridValue: number = undefined;
 
 
-    installButton(index: number, viewManager: ViewManager) {
+    installButton(index: number, onClick: (index: any) => void) {
         this._index = index;
-        let action = viewManager.onButtonClick;
+
         // 訂閱點擊事件
         this.node.on("mouse-down", () => {
             if (this.gridValue == 0 || this.gridValue == 1) return;    // 代表已有圖案
 
-            this.onClickButton(this._index, action);
-            console.log('click');
+            this.onClickButton(this._index, onClick);
+            // console.log('click');
         });
     }
 
@@ -44,8 +48,12 @@ export class OXButton extends Component {
         this.node.targetOff(this);
     }
 
-    update(deltaTime: number) {
+    showSymbol(OX: SpriteFrame) {
+        this.mark.spriteFrame = OX;
+    }
 
+    clearSymbol() {
+        this.mark.spriteFrame = null;        
     }
 }
 
