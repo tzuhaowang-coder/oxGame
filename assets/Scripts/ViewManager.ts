@@ -34,9 +34,10 @@ export class ViewManager extends Component {
     }
 
     onButtonClick(index: number) {
-
-        // 傳送資訊給gameManager
-        director.emit(`onButtonClicked`, index);
+        if (this.board.canPut(index)) {
+            // 傳送資訊給gameManager
+            director.emit(`onButtonClicked`, index);
+        }
     }
 
     boardInfoUpdate(newStep: number, currentTurn: EGameTurn) {
@@ -66,7 +67,8 @@ export class ViewManager extends Component {
     }
 
     boardClear() {
-        this.buttons.forEach(b=>b.clearSymbol());
+        this.buttons.forEach(b => b.clearSymbol());
+        this.resultLabel.string = ``;
     }
 }
 
