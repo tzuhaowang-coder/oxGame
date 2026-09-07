@@ -30,6 +30,7 @@ export class ViewManager extends Component {
         this.buttons = this.buttonParent.getComponentsInChildren(OXButton);
         this.buttons.forEach((b, sibling) => {
             b.installButton(sibling, (index) => this.onButtonClick(index));
+            // b.node.on()
         });
     }
 

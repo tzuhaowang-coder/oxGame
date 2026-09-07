@@ -43,8 +43,9 @@ export class GameManager extends Component {
         this.viewManager.getBoard(this.board);
         this.aiManager.getBoard(this.board);
 
+        // todo: 不要用on
         director.on(`onButtonClicked`, this.playerChessMove, this);
-
+        
     }
 
     newGame() {
