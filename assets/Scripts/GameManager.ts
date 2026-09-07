@@ -25,6 +25,7 @@ export class GameManager extends Component {
 
         switch (value) {
             case EGameTurn.AI:
+                // todo: 等0.5秒
                 this.AIThinkingAndMove();
 
                 break;
@@ -42,33 +43,16 @@ export class GameManager extends Component {
         this.board = new Board();
         this.viewManager.getBoard(this.board);
         this.aiManager.getBoard(this.board);
-
+        this.viewManager.onCellClicked = (index: number) => {
+            this.playerChessMove(index);
+        }
         // todo: 不要用on
-        director.on(`onButtonClicked`, this.playerChessMove, this);
-        
-    }
-
-    newGame() {
-        console.log(`new game`);
-        this.board.clearAllCells();
-        this.viewManager.boardClear();
-
-        // player always go first
-        this.currentTurn = EGameTurn.Player;
-        this._isGameOver = false;
-    }
-
-    playerChessMove(index: number) {
-        if ((this._isGameOver) || (this.currentTurn != EGameTurn.Player)) return;   // not my turn
-
-        console.log(`onButtonClicked`);
-
-        this.moveAndUpdate(index);
-
+        // director.on(`onButtonClicked`, this.playerChessMove, this);
     }
 
     private moveAndUpdate(index: number) {
 
+        // 下子
         this.board.chessMove(index, this.currentTurn);
         // 更新畫面
         this.onBoardInfoUpdated(index);
@@ -90,6 +74,17 @@ export class GameManager extends Component {
         this.changeTurn();
     }
 
+    playerChessMove(index: number) {
+        if ((this._isGameOver) || (this.currentTurn != EGameTurn.Player)) {
+            return;
+        }   // not my turn
+
+        console.log(`onButtonClicked`);
+
+        this.moveAndUpdate(index);
+
+    }
+
     onBoardInfoUpdated(newStep: number): void {
         //todo: 更新盤面
         console.log(`onBoardInfoUpdated`);
@@ -105,6 +100,16 @@ export class GameManager extends Component {
     private changeTurn() {
         console.log(`changeTurn`);
         this.currentTurn = this.currentTurn == EGameTurn.Player ? EGameTurn.AI : EGameTurn.Player;
+    }
+
+    newGame() {
+        console.log(`new game`);
+        this.board.clearAllCells();
+        this.viewManager.boardClear();
+
+        // player always go first
+        this.currentTurn = EGameTurn.Player;
+        this._isGameOver = false;
     }
 }
 

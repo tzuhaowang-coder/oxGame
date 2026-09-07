@@ -22,7 +22,7 @@ export class AIManager extends Component {
         for (let i = 0; i < 9; i++) {
             if (this.board.canPut(i)) {
                 this.board.chessMove(i, EGameTurn.AI)
-                let score: number = this.MiniMax(this.board, 0, false);
+                let score: number = this.miniMax(this.board, 0, false);
                 this.board.deleteCell(i);
 
                 if (score > bestScore) {
@@ -36,7 +36,7 @@ export class AIManager extends Component {
     };
 
 
-    MiniMax(board: Board, takeTime: number, isAiTurn: boolean): number {
+    miniMax(board: Board, takeTime: number, isAiTurn: boolean): number {
 
         // 判斷勝負、平手
         if (board.checkWin(EGameTurn.AI)) return 10 - takeTime;
@@ -49,7 +49,7 @@ export class AIManager extends Component {
             for (let i = 0; i < 9; i++) {
                 if (board.canPut(i)) {
                     board.chessMove(i, EGameTurn.Player);
-                    let score: number = this.MiniMax(board, takeTime + 1, true);
+                    let score: number = this.miniMax(board, takeTime + 1, true);
                     board.deleteCell(i);
                     miniScore = Math.min(miniScore, score);
                 }
@@ -63,7 +63,7 @@ export class AIManager extends Component {
             for (let i = 0; i < 9; i++) {
                 if (board.canPut(i)) {
                     board.chessMove(i, EGameTurn.AI);
-                    let score: number = this.MiniMax(board, takeTime + 1, false);
+                    let score: number = this.miniMax(board, takeTime + 1, false);
                     board.deleteCell(i);
                     maxScore = Math.max(maxScore, score);
                 }
