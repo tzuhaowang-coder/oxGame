@@ -46,8 +46,6 @@ export class GameManager extends Component {
         this.viewManager.onCellClicked = (index: number) => {
             this.playerChessMove(index);
         }
-        // todo: 不要用on
-        // director.on(`onButtonClicked`, this.playerChessMove, this);
     }
 
     private moveAndUpdate(index: number) {
