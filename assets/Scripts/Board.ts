@@ -56,4 +56,17 @@ export class Board {
     clearAllCells(): void {
         this.cellsMarkType.fill(EGameTurn.Prepare);
     }
+
+    aiFirstMove(): boolean {
+        let count = 0;
+        for (let i = 0; i < this.cellsMarkType.length; i++) {
+            if (!this.canPut(i)) {
+                count++;
+            }
+            if (count > 1) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

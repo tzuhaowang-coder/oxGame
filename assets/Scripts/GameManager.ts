@@ -1,4 +1,4 @@
-import {_decorator, Component, director, Node} from 'cc';
+import {_decorator, Component} from 'cc';
 import {AIManager} from "db://assets/Scripts/AIManager";
 import {ViewManager} from "db://assets/Scripts/ViewManager";
 import {Board} from "db://assets/Scripts/Board";
@@ -25,8 +25,25 @@ export class GameManager extends Component {
 
         switch (value) {
             case EGameTurn.AI:
-                // todo: 等0.5秒
-                this.AIThinkingAndMove();
+                let firstMove: boolean = this.board.aiFirstMove();
+                if (firstMove) {
+                    let rate = Math.random();
+                    let noobMove = rate >= 0.3; // 7成機率亂下
+                    if (noobMove) {
+                        this.scheduleOnce(() => {
+                            this.aiNoobMove();
+                        }, 0.5);
+                    } else {
+                        this.scheduleOnce(() => {
+                            this.AIThinkingAndMove();
+                        }, 0.5);
+                    }
+                } else {
+                    this.scheduleOnce(() => {
+                        this.AIThinkingAndMove();
+                    }, 0.5);
+                }
+
 
                 break;
             case EGameTurn.Prepare:
@@ -84,7 +101,7 @@ export class GameManager extends Component {
     }
 
     onBoardInfoUpdated(newStep: number): void {
-        //todo: 更新盤面
+        // 更新盤面
         console.log(`onBoardInfoUpdated`);
         this.viewManager.boardInfoUpdate(newStep, this.currentTurn);
     }
@@ -93,6 +110,21 @@ export class GameManager extends Component {
         console.log("AIThinkingAndMove");
         let bestMove = this.aiManager.getAIBestMove();
         this.moveAndUpdate(bestMove);
+    }
+
+    private aiNoobMove() {
+        console.log("AI NoobMove");
+        let move = this.getAINoobMove();
+        this.moveAndUpdate(move);
+    }
+
+    private getAINoobMove() {
+        let noobMovesArray = [1, 3, 5, 7];
+
+        let validMoves = noobMovesArray.filter(index => this.board.canPut(index));
+        let randomPickIndex = Math.floor(Math.random() * validMoves.length);
+
+        return validMoves[randomPickIndex];
     }
 
     private changeTurn() {
@@ -109,6 +141,8 @@ export class GameManager extends Component {
         this.currentTurn = EGameTurn.Player;
         this._isGameOver = false;
     }
+
+
 }
 
 export enum EGameTurn {
