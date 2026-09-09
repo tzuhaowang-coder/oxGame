@@ -1,4 +1,4 @@
-import {_decorator, Component} from 'cc';
+import {_decorator, Button, Component, EventHandler} from 'cc';
 import {AIManager} from "db://assets/Scripts/AIManager";
 import {ViewManager} from "db://assets/Scripts/ViewManager";
 import {Board} from "db://assets/Scripts/Board";
@@ -7,7 +7,7 @@ const {ccclass, property} = _decorator;
 
 @ccclass('GameManager')
 export class GameManager extends Component {
-
+    @property(Button) resetGameButton: Button = null;
     @property(AIManager) aiManager: AIManager = null;
     @property(ViewManager) viewManager: ViewManager = null;
     board: Board = null;
@@ -58,6 +58,7 @@ export class GameManager extends Component {
 
     onLoad() {
         this.board = new Board();
+        this.installResetBtn();
         this.viewManager.getBoard(this.board);
         this.aiManager.getBoard(this.board);
         this.viewManager.onCellClicked = (index: number) => {
@@ -143,6 +144,15 @@ export class GameManager extends Component {
     }
 
 
+    private installResetBtn() {
+        const handler = new EventHandler();
+        handler.target = this.node;
+        handler.component = `GameManager`;
+        handler.handler = `newGame`;
+        handler.customEventData = ``;
+
+        this.resetGameButton.clickEvents.push(handler);
+    }
 }
 
 export enum EGameTurn {

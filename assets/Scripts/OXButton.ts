@@ -1,5 +1,4 @@
 import {_decorator, Component, Node, Sprite, SpriteFrame} from 'cc';
-import {EGameTurn} from "db://assets/Scripts/GameManager";
 
 const {ccclass, property} = _decorator;
 

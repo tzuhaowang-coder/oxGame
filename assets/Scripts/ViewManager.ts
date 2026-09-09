@@ -1,4 +1,4 @@
-import {_decorator, Button, Component, director, EventHandler, instantiate, Label, Node, Prefab, SpriteFrame} from 'cc';
+import {_decorator, Button, Component, EventHandler, instantiate, Label, Node, Prefab, SpriteFrame} from 'cc';
 import {OXButton} from "db://assets/Scripts/OXButton";
 import {EGameTurn} from "./GameManager";
 import {Board} from "./Board";
