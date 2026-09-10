@@ -1,7 +1,6 @@
-import {_decorator, Button, Component, EventHandler} from 'cc';
+import {_decorator, Button, Component, EventHandler, instantiate, Label, Prefab, SpriteFrame, Node, tween} from 'cc';
 import {AIManager} from "db://assets/Scripts/AIManager";
-import {ViewManager} from "db://assets/Scripts/ViewManager";
-import {Board} from "db://assets/Scripts/Board";
+import {OXButton} from "db://assets/Scripts/OXButton";
 
 const {ccclass, property} = _decorator;
 
@@ -9,8 +8,20 @@ const {ccclass, property} = _decorator;
 export class GameManager extends Component {
     @property(Button) resetGameButton: Button = null;
     @property(AIManager) aiManager: AIManager = null;
-    @property(ViewManager) viewManager: ViewManager = null;
-    board: Board = null;
+    @property({type: SpriteFrame, displayName: `０是Ｏ，１是Ｘ`}) OXsprite: SpriteFrame[] = [];
+    @property(Label) resultLabel: Label = null;
+
+    // 9個按鈕
+    @property(Node) buttonParent: Node = null;
+    @property(Prefab) preButton: Node = null;
+
+    private readonly cellsMarkType: EGameTurn[] = new Array(9).fill(EGameTurn.Over);
+
+    private readonly winLines: number[][] = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+    buttons: OXButton[] = [];
+
     // 判斷換誰
     _currentTurn: EGameTurn = EGameTurn.Prepare;
 
@@ -25,7 +36,7 @@ export class GameManager extends Component {
 
         switch (value) {
             case EGameTurn.AI:
-                let firstMove: boolean = this.board.aiFirstMove();
+                let firstMove: boolean = this.aiFirstMove();
                 if (firstMove) {
                     let rate = Math.random();
                     let noobMove = rate >= 0.3; // 7成機率亂下
@@ -57,32 +68,39 @@ export class GameManager extends Component {
     }
 
     onLoad() {
-        this.board = new Board();
         this.installResetBtn();
-        this.viewManager.getBoard(this.board);
-        this.aiManager.getBoard(this.board);
-        this.viewManager.onCellClicked = (index: number) => {
-            this.playerChessMove(index);
+
+        for (let i = 0; i < 9; i++) {
+            this.buttonParent.addChild(instantiate(this.preButton));
         }
+        this.buttons = this.buttonParent.getComponentsInChildren(OXButton);
+
+        this.aiManager.getManager(this);
+
+        this.buttons.forEach((b, sibling) => {
+            let btn = b.getComponent(Button);
+            b.installButton(this, sibling);
+        });
     }
 
     private moveAndUpdate(index: number) {
 
         // 下子
-        this.board.chessMove(index, this.currentTurn);
-        // 更新畫面
-        this.onBoardInfoUpdated(index);
+        this.chessMove(index, this.currentTurn);
 
-        if (this.board.checkWin(this.currentTurn)) {   // 有人贏了
-            console.log(`有人贏了是${this.currentTurn}，${this.board.getCellMarkType()}`);
-            this.viewManager.showResult(this.currentTurn);
+        // 更新畫面
+        this.boardInfoUpdate(index, this.currentTurn);
+
+        if (this.checkWin(this.currentTurn)) {   // 有人贏了
+            console.log(`有人贏了是${this.currentTurn}，${this.cellsMarkType}`);
+            this.showResult(this.currentTurn);
             this.currentTurn = EGameTurn.Over;
 
             return;
         }
-        if (this.board.checkDraw()) {
-            console.log(`平手，${this.board.getCellMarkType()}`);
-            this.viewManager.showResult(3);
+        if (this.checkDraw()) {
+            console.log(`平手，${this.cellsMarkType}`);
+            this.showResult(3);
             this.currentTurn = EGameTurn.Over;
             return;
         }
@@ -90,7 +108,8 @@ export class GameManager extends Component {
         this.changeTurn();
     }
 
-    playerChessMove(index: number) {
+    playerChessMove(event: Event, data: string) {
+        let index = parseInt(data);
         if ((this._isGameOver) || (this.currentTurn != EGameTurn.Player)) {
             return;
         }   // not my turn
@@ -98,13 +117,6 @@ export class GameManager extends Component {
         console.log(`onButtonClicked`);
 
         this.moveAndUpdate(index);
-
-    }
-
-    onBoardInfoUpdated(newStep: number): void {
-        // 更新盤面
-        console.log(`onBoardInfoUpdated`);
-        this.viewManager.boardInfoUpdate(newStep, this.currentTurn);
     }
 
     private AIThinkingAndMove() {
@@ -119,10 +131,10 @@ export class GameManager extends Component {
         this.moveAndUpdate(move);
     }
 
-    private getAINoobMove() {
+    private getAINoobMove(): number {
         let noobMovesArray = [1, 3, 5, 7];
 
-        let validMoves = noobMovesArray.filter(index => this.board.canPut(index));
+        let validMoves = noobMovesArray.filter(index => this.canPut(index));
         let randomPickIndex = Math.floor(Math.random() * validMoves.length);
 
         return validMoves[randomPickIndex];
@@ -135,8 +147,8 @@ export class GameManager extends Component {
 
     newGame() {
         console.log(`new game`);
-        this.board.clearAllCells();
-        this.viewManager.boardClear();
+        this.clearAllCells();
+        this.boardClear();
 
         // player always go first
         this.currentTurn = EGameTurn.Player;
@@ -152,6 +164,83 @@ export class GameManager extends Component {
         handler.customEventData = ``;
 
         this.resetGameButton.clickEvents.push(handler);
+    }
+
+    boardInfoUpdate(newStep: number, currentTurn: EGameTurn) {
+        console.log(`currentTurn: ${currentTurn}`);
+        let OX = this.OXsprite[currentTurn];
+        this.buttons[newStep].showSymbol(OX);
+    }
+
+    showResult(currentTurn: EGameTurn) {
+        let message: string;
+        switch (currentTurn) {
+            case 0:     //O
+                message = `O wins`;
+                break;
+            case 1:     //X
+                message = `X Wins`;
+                break;
+            default:    // draw
+                message = `Draw`;
+                break;
+        }
+        this.resultLabel.string = message;
+    }
+
+    boardClear() {
+        this.buttons.forEach(b => b.clearSymbol());
+        this.resultLabel.string = ``;
+    }
+
+    canPut(index: number): boolean {
+        return this.cellsMarkType[index] == EGameTurn.Prepare;
+    }
+
+    deleteCell(index: number): void {
+        this.cellsMarkType[index] = EGameTurn.Prepare;
+    }
+
+    chessMove(index: number, whoseTurn: EGameTurn): void {
+        this.cellsMarkType[index] = whoseTurn;
+    }
+
+    checkWin(markType: EGameTurn) {
+        // console.log(`markType is ${markType}}`)
+        for (let i = 0; i < this.winLines.length; i++) {
+            let line = this.winLines[i];
+            if (this.cellsMarkType[line[0]] === markType &&
+                this.cellsMarkType[line[1]] === markType &&
+                this.cellsMarkType[line[2]] === markType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    checkDraw(): boolean {
+
+        // 如果沒分出勝負但是所有的格子都填滿了，就是平手
+        return this.cellsMarkType.every((cell: EGameTurn) => {
+            return cell !== EGameTurn.Prepare;
+        })
+    }
+
+    clearAllCells(): void {
+        this.cellsMarkType.fill(EGameTurn.Prepare);
+    }
+
+    aiFirstMove(): boolean {
+        let count = 0;
+        for (let i = 0; i < this.cellsMarkType.length; i++) {
+            if (!this.canPut(i)) {
+                count++;
+            }
+            if (count > 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

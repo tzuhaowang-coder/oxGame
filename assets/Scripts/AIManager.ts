@@ -1,16 +1,15 @@
 import {_decorator, Component} from 'cc';
-import {Board} from "db://assets/Scripts/Board";
-import {EGameTurn} from "db://assets/Scripts/GameManager";
+import {EGameTurn, GameManager} from "db://assets/Scripts/GameManager";
 
 const {ccclass, property} = _decorator;
 
 @ccclass('AIManager')
 export class AIManager extends Component {
 
-    private board: Board;
+    private manager: GameManager;
 
-    getBoard(board: Board) {
-        this.board = board;
+    getManager(manager: GameManager) {
+        this.manager = manager;
     }
 
     // 極值演算法(其實就是窮舉法）
@@ -18,12 +17,12 @@ export class AIManager extends Component {
         let bestScore = -Infinity;
         let bestMove = -1;
 
-        // let emptyCells = this.board.getLegalCells();
+        // let emptyCells = this.manager.getLegalCells();
         for (let i = 0; i < 9; i++) {
-            if (this.board.canPut(i)) {
-                this.board.chessMove(i, EGameTurn.AI)
-                let score: number = this.miniMax(this.board, 0, false);
-                this.board.deleteCell(i);
+            if (this.manager.canPut(i)) {
+                this.manager.chessMove(i, EGameTurn.AI)
+                let score: number = this.miniMax(0, false);
+                this.manager.deleteCell(i);
 
                 if (score > bestScore) {
                     bestScore = score;
@@ -36,21 +35,27 @@ export class AIManager extends Component {
     };
 
 
-    miniMax(board: Board, takeTime: number, isAiTurn: boolean): number {
+    miniMax(takeTime: number, isAiTurn: boolean): number {
 
         // 判斷勝負、平手
-        if (board.checkWin(EGameTurn.AI)) return 10 - takeTime;
-        if (board.checkWin(EGameTurn.Player)) return takeTime - 10;
-        if (board.checkDraw()) return 0;
+        if (this.manager.checkWin(EGameTurn.AI)) {
+            return 10 - takeTime;
+        }
+        if (this.manager.checkWin(EGameTurn.Player)) {
+            return takeTime - 10;
+        }
+        if (this.manager.checkDraw()) {
+            return 0;
+        }
 
         if (!isAiTurn) {   // 人類下子
             let miniScore = Infinity;
 
             for (let i = 0; i < 9; i++) {
-                if (board.canPut(i)) {
-                    board.chessMove(i, EGameTurn.Player);
-                    let score: number = this.miniMax(board, takeTime + 1, true);
-                    board.deleteCell(i);
+                if (this.manager.canPut(i)) {
+                    this.manager.chessMove(i, EGameTurn.Player);
+                    let score: number = this.miniMax(takeTime + 1, true);
+                    this.manager.deleteCell(i);
                     miniScore = Math.min(miniScore, score);
                 }
             }
@@ -61,10 +66,10 @@ export class AIManager extends Component {
             let maxScore: number = -Infinity;
 
             for (let i = 0; i < 9; i++) {
-                if (board.canPut(i)) {
-                    board.chessMove(i, EGameTurn.AI);
-                    let score: number = this.miniMax(board, takeTime + 1, false);
-                    board.deleteCell(i);
+                if (this.manager.canPut(i)) {
+                    this.manager.chessMove(i, EGameTurn.AI);
+                    let score: number = this.miniMax(takeTime + 1, false);
+                    this.manager.deleteCell(i);
                     maxScore = Math.max(maxScore, score);
                 }
             }
